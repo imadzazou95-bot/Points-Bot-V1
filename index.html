@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Points Bot - Rewarded Ad</title>
+
+<!-- Telegram Mini App SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- Monetag SDK -->
+<script src="//libtl.com/sdk.js" data-zone="11958872" data-sdk="show_11958872"></script>
+
+<style>
+:root{
+  font-family:Inter,system-ui,-apple-system,sans-serif;
+  color:#fff;
+  background:#0b0f17
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#182337 0,#0b0f17 55%);
+  display:flex;
+  justify-content:center
+}
+main{
+  width:100%;
+  max-width:520px;
+  padding:28px 18px 32px;
+  text-align:center
+}
+.logo{
+  width:72px;
+  height:72px;
+  margin:12px auto 18px;
+  border-radius:22px;
+  background:#229ed9;
+  display:grid;
+  place-items:center;
+  font-size:34px;
+  box-shadow:0 12px 35px #0006
+}
+h1{margin:0;font-size:25px}
+p{color:#aeb8c8;line-height:1.55}
+.card{
+  margin-top:24px;
+  padding:22px;
+  border:1px solid #ffffff14;
+  background:#ffffff08;
+  border-radius:22px
+}
+.badge{
+  display:inline-block;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#229ed91c;
+  color:#6bc5ef;
+  font-size:13px;
+  margin-bottom:12px
+}
+button{
+  width:100%;
+  border:0;
+  border-radius:15px;
+  padding:15px;
+  margin-top:10px;
+  font-size:16px;
+  font-weight:700;
+  background:#229ed9;
+  color:#fff;
+  cursor:pointer
+}
+button:disabled{opacity:.55;cursor:not-allowed}
+#status{margin-top:15px;font-size:14px;color:#aeb8c8}
+.success{color:#65d99a!important}
+.error{color:#ff7b7b!important}
+.small{font-size:12px;color:#7f8a9b;margin-top:18px}
+</style>
+</head>
+
+<body>
+<main>
+  <div class="logo">🎁</div>
+  <h1>Points Bot</h1>
+  <p>Watch the sponsored advertisement completely to receive your reward.</p>
+
+  <section class="card">
+    <span class="badge">🎬 Rewarded Ad</span>
+
+    <div id="ad-container">
+      <p id="ad-placeholder">
+        Watch the advertisement completely to receive your points.
+      </p>
+    </div>
+
+    <button id="watch-ad">🎬 Watch Ad & Get Points</button>
+
+    <button id="close-app" disabled>✅ Reward Received</button>
+
+    <div id="status">Preparing...</div>
+  </section>
+
+  <div class="small">
+    Please do not close the advertisement before it finishes.
+  </div>
+</main>
+
+<script>
+(function(){
+
+  const tg = window.Telegram?.WebApp;
+
+  if(tg){
+    tg.ready();
+    tg.expand();
+  }
+
+  const watchBtn = document.getElementById('watch-ad');
+  const closeBtn = document.getElementById('close-app');
+  const status = document.getElementById('status');
+
+  let rewardReceived = false;
+  let rewardProcessing = false;
+
+  function setStatus(message, type){
+    status.textContent = message;
+    status.className = type || '';
+  }
+
+  /*
+   * IMPORTANT:
+   * This function is called only after Monetag's Promise resolves.
+   *
+   * At this stage we only show the successful state.
+   * Connect your existing n8n reward endpoint here when ready.
+   */
+  async function rewardUser(){
+
+    if(rewardProcessing || rewardReceived) return;
+
+    rewardProcessing = true;
+    watchBtn.disabled = true;
+    watchBtn.textContent = '⏳ Processing Reward...';
+
+    try{
+
+      /*
+       * TODO:
+       * Send the Telegram user ID to your existing n8n webhook.
+       *
+       * Example:
+       *
+       * await fetch('YOUR_N8N_WEBHOOK_URL', {
+       *   method: 'POST',
+       *   headers: {'Content-Type':'application/json'},
+       *   body: JSON.stringify({
+       *     user_id: tg?.initDataUnsafe?.user?.id
+       *   })
+       * });
+       *
+       * Do NOT add this until the exact n8n webhook is confirmed.
+       */
+
+      rewardReceived = true;
+
+      watchBtn.style.display = 'none';
+      closeBtn.disabled = false;
+      closeBtn.textContent = '✅ Reward Received';
+      setStatus('Advertisement completed successfully.', 'success');
+
+    }catch(error){
+
+      console.error('Reward error:', error);
+
+      rewardProcessing = false;
+      watchBtn.disabled = false;
+      watchBtn.textContent = '🎬 Watch Ad & Get Points';
+
+      setStatus('Could not process the reward. Please try again.', 'error');
+    }
+  }
+
+  async function showAd(){
+
+    if(rewardReceived || rewardProcessing) return;
+
+    if(typeof window.show_11958872 !== 'function'){
+      setStatus(
+        'Advertisement system is still loading. Please wait a moment and try again.',
+        'error'
+      );
+      return;
+    }
+
+    watchBtn.disabled = true;
+    watchBtn.textContent = '⏳ Loading Advertisement...';
+    setStatus('Please watch the advertisement completely.');
+
+    try{
+
+      /*
+       * Monetag Rewarded Interstitial
+       *
+       * The Promise resolves after the ad reward condition is met.
+       */
+      await window.show_11958872();
+
+      await rewardUser();
+
+    }catch(error){
+
+      console.error('Monetag error:', error);
+
+      watchBtn.disabled = false;
+      watchBtn.textContent = '🎬 Watch Ad & Get Points';
+
+      setStatus(
+        'The advertisement could not be completed. Please try again.',
+        'error'
+      );
+    }
+  }
+
+  watchBtn.addEventListener('click', showAd);
+
+  closeBtn.addEventListener('click', function(){
+
+    if(!rewardReceived) return;
+
+    if(tg && typeof tg.close === 'function'){
+      tg.close();
+    }
+  });
+
+  setStatus('Ready. Watch the ad to receive your reward.');
+
+})();
+</script>
+
+</body>
+</html>
