@@ -1,242 +1,439 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Points Bot - Rewarded Ad</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-<!-- Telegram Mini App SDK -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>Points Bot V1</title>
 
-<!-- Monetag SDK -->
-<script src="//libtl.com/sdk.js" data-zone="11958872" data-sdk="show_11958872"></script>
+  <!-- Telegram Mini App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<style>
-:root{
-  font-family:Inter,system-ui,-apple-system,sans-serif;
-  color:#fff;
-  background:#0b0f17
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  background:radial-gradient(circle at top,#182337 0,#0b0f17 55%);
-  display:flex;
-  justify-content:center
-}
-main{
-  width:100%;
-  max-width:520px;
-  padding:28px 18px 32px;
-  text-align:center
-}
-.logo{
-  width:72px;
-  height:72px;
-  margin:12px auto 18px;
-  border-radius:22px;
-  background:#229ed9;
-  display:grid;
-  place-items:center;
-  font-size:34px;
-  box-shadow:0 12px 35px #0006
-}
-h1{margin:0;font-size:25px}
-p{color:#aeb8c8;line-height:1.55}
-.card{
-  margin-top:24px;
-  padding:22px;
-  border:1px solid #ffffff14;
-  background:#ffffff08;
-  border-radius:22px
-}
-.badge{
-  display:inline-block;
-  padding:7px 12px;
-  border-radius:999px;
-  background:#229ed91c;
-  color:#6bc5ef;
-  font-size:13px;
-  margin-bottom:12px
-}
-button{
-  width:100%;
-  border:0;
-  border-radius:15px;
-  padding:15px;
-  margin-top:10px;
-  font-size:16px;
-  font-weight:700;
-  background:#229ed9;
-  color:#fff;
-  cursor:pointer
-}
-button:disabled{opacity:.55;cursor:not-allowed}
-#status{margin-top:15px;font-size:14px;color:#aeb8c8}
-.success{color:#65d99a!important}
-.error{color:#ff7b7b!important}
-.small{font-size:12px;color:#7f8a9b;margin-top:18px}
-</style>
+  <!-- Monetag -->
+  <script src="https://libtl.com/sdk.js"
+          data-zone="11958872"
+          data-sdk="show_11958872"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: var(--tg-theme-bg-color, #0f1115);
+      color: var(--tg-theme-text-color, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 430px;
+      text-align: center;
+    }
+
+    .card {
+      background: var(--tg-theme-secondary-bg-color, #181b22);
+      border-radius: 24px;
+      padding: 30px 22px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.25);
+    }
+
+    .logo {
+      font-size: 55px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 25px;
+    }
+
+    .description {
+      opacity: .75;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    .points {
+      background: rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .points-number {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      background: var(--tg-theme-button-color, #2481cc);
+      color: var(--tg-theme-button-text-color, #fff);
+      transition: .2s;
+    }
+
+    button:active {
+      transform: scale(.97);
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .status {
+      min-height: 25px;
+      margin-top: 18px;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .success {
+      color: #43d17b;
+    }
+
+    .error {
+      color: #ff5c5c;
+    }
+
+    .loading {
+      opacity: .7;
+    }
+
+    .back {
+      margin-top: 15px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: 14px;
+    }
+  </style>
 </head>
 
 <body>
-<main>
-  <div class="logo">🎁</div>
-  <h1>Points Bot</h1>
-  <p>Watch the sponsored advertisement completely to receive your reward.</p>
 
-  <section class="card">
-    <span class="badge">🎬 Rewarded Ad</span>
+<div class="container">
+  <div class="card">
 
-    <div id="ad-container">
-      <p id="ad-placeholder">
-        Watch the advertisement completely to receive your points.
-      </p>
+    <div class="logo">🎁</div>
+
+    <h1>اكسب نقاط</h1>
+
+    <div class="description">
+      شاهد الإعلان واحصل على نقاطك مباشرة.
     </div>
 
-    <button id="watch-ad">🎬 Watch Ad & Get Points</button>
+    <div class="points">
+      <div>النقاط المكتسبة</div>
+      <div class="points-number" id="reward">
+        +5
+      </div>
+    </div>
 
-    <button id="close-app" disabled>✅ Reward Received</button>
+    <button id="watchBtn">
+      🎬 مشاهدة الإعلان
+    </button>
 
-    <div id="status">Preparing...</div>
-  </section>
+    <div id="status" class="status"></div>
 
-  <div class="small">
-    Please do not close the advertisement before it finishes.
+    <button class="back" id="closeBtn">
+      إغلاق
+    </button>
+
   </div>
-</main>
+</div>
 
 <script>
-(function(){
+"use strict";
 
-  const tg = window.Telegram?.WebApp;
+/* =========================================
+   CONFIG
+========================================= */
 
-  if(tg){
-    tg.ready();
-    tg.expand();
+const WEBHOOK_URL =
+  "https://faizafrivvv.app.n8n.cloud/webhook/points-bot/monetag-reward";
+
+const REWARD = 5;
+
+
+/* =========================================
+   TELEGRAM
+========================================= */
+
+const tg = window.Telegram?.WebApp;
+
+if (tg) {
+  tg.ready();
+  tg.expand();
+}
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const watchBtn = document.getElementById("watchBtn");
+const closeBtn = document.getElementById("closeBtn");
+const statusEl = document.getElementById("status");
+
+
+/* =========================================
+   HELPERS
+========================================= */
+
+function setStatus(message, type = "") {
+  statusEl.textContent = message;
+  statusEl.className = "status " + type;
+}
+
+
+function createClaimId() {
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID === "function"
+  ) {
+    return window.crypto.randomUUID();
   }
 
-  const watchBtn = document.getElementById('watch-ad');
-  const closeBtn = document.getElementById('close-app');
-  const status = document.getElementById('status');
+  return (
+    Date.now().toString(36) +
+    "-" +
+    Math.random().toString(36).substring(2, 12)
+  );
+}
 
-  let rewardReceived = false;
-  let rewardProcessing = false;
 
-  function setStatus(message, type){
-    status.textContent = message;
-    status.className = type || '';
+function getTelegramUser() {
+  if (!tg || !tg.initDataUnsafe) {
+    return null;
   }
 
-  /*
-   * IMPORTANT:
-   * This function is called only after Monetag's Promise resolves.
-   *
-   * At this stage we only show the successful state.
-   * Connect your existing n8n reward endpoint here when ready.
-   */
-  async function rewardUser(){
+  return tg.initDataUnsafe.user || null;
+}
 
-    if(rewardProcessing || rewardReceived) return;
 
-    rewardProcessing = true;
-    watchBtn.disabled = true;
-    watchBtn.textContent = '⏳ Processing Reward...';
+/* =========================================
+   CLOSE MINI APP
+========================================= */
 
-    try{
+closeBtn.addEventListener("click", () => {
+  if (tg) {
+    tg.close();
+  } else {
+    window.close();
+  }
+});
+
+
+/* =========================================
+   WATCH AD
+========================================= */
+
+watchBtn.addEventListener("click", async () => {
+
+  if (watchBtn.disabled) {
+    return;
+  }
+
+  const user = getTelegramUser();
+
+  /* Telegram check */
+  if (!user || !user.id) {
+    setStatus(
+      "❌ يجب فتح هذه الصفحة من داخل بوت Telegram.",
+      "error"
+    );
+    return;
+  }
+
+  /* initData check */
+  if (!tg.initData) {
+    setStatus(
+      "❌ تعذر التحقق من Telegram.",
+      "error"
+    );
+    return;
+  }
+
+  /* Monetag check */
+  if (typeof window.show_11958872 !== "function") {
+    setStatus(
+      "❌ الإعلان غير جاهز حالياً. حاول مرة أخرى.",
+      "error"
+    );
+    return;
+  }
+
+  watchBtn.disabled = true;
+  watchBtn.textContent = "⏳ جاري تحميل الإعلان...";
+  setStatus("يرجى مشاهدة الإعلان بالكامل...", "loading");
+
+  const claimId = createClaimId();
+
+  try {
+
+    /* =====================================
+       SHOW MONETAG REWARDED INTERSTITIAL
+    ===================================== */
+
+    await window.show_11958872();
+
+
+    /* =====================================
+       SEND REWARD TO N8N
+    ===================================== */
+
+    setStatus("⏳ جاري إضافة النقاط...", "loading");
+
+    const response = await fetch(WEBHOOK_URL, {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        user_id: String(user.id),
+        claim_id: claimId,
+        initData: tg.initData
+      })
+    });
+
+
+    /* HTTP error */
+    if (!response.ok) {
+      throw new Error(
+        "HTTP " + response.status
+      );
+    }
+
+
+    /* Read response */
+    const data = await response.json();
+
+
+    /* =====================================
+       SUCCESS
+    ===================================== */
+
+    if (data.ok === true) {
+
+      const reward =
+        Number(data.reward || REWARD);
+
+      const points =
+        data.points !== undefined
+          ? data.points
+          : "?";
+
+      setStatus(
+        `✅ تم إضافة +${reward} نقاط بنجاح!\nرصيدك الآن: ${points}`,
+        "success"
+      );
+
+      watchBtn.textContent = "✅ تم احتساب الإعلان";
 
       /*
-       * TODO:
-       * Send the Telegram user ID to your existing n8n webhook.
-       *
-       * Example:
-       *
-       * await fetch('YOUR_N8N_WEBHOOK_URL', {
-       *   method: 'POST',
-       *   headers: {'Content-Type':'application/json'},
-       *   body: JSON.stringify({
-       *     user_id: tg?.initDataUnsafe?.user?.id
-       *   })
-       * });
-       *
-       * Do NOT add this until the exact n8n webhook is confirmed.
+       * Notify Telegram
        */
+      if (tg) {
+        try {
+          tg.HapticFeedback.notificationOccurred("success");
+        } catch (e) {}
+      }
 
-      rewardReceived = true;
-
-      watchBtn.style.display = 'none';
-      closeBtn.disabled = false;
-      closeBtn.textContent = '✅ Reward Received';
-      setStatus('Advertisement completed successfully.', 'success');
-
-    }catch(error){
-
-      console.error('Reward error:', error);
-
-      rewardProcessing = false;
-      watchBtn.disabled = false;
-      watchBtn.textContent = '🎬 Watch Ad & Get Points';
-
-      setStatus('Could not process the reward. Please try again.', 'error');
-    }
-  }
-
-  async function showAd(){
-
-    if(rewardReceived || rewardProcessing) return;
-
-    if(typeof window.show_11958872 !== 'function'){
-      setStatus(
-        'Advertisement system is still loading. Please wait a moment and try again.',
-        'error'
-      );
       return;
     }
 
-    watchBtn.disabled = true;
-    watchBtn.textContent = '⏳ Loading Advertisement...';
-    setStatus('Please watch the advertisement completely.');
 
-    try{
+    /* =====================================
+       DENIED
+    ===================================== */
 
-      /*
-       * Monetag Rewarded Interstitial
-       *
-       * The Promise resolves after the ad reward condition is met.
-       */
-      await window.show_11958872();
+    let message = "❌ لم تتم إضافة النقاط.";
 
-      await rewardUser();
+    switch (data.reason) {
 
-    }catch(error){
+      case "cooldown":
+        message =
+          "⏳ يجب الانتظار قليلاً قبل مشاهدة إعلان آخر.";
+        break;
 
-      console.error('Monetag error:', error);
+      case "daily_limit":
+        message =
+          "🚫 وصلت إلى الحد اليومي للإعلانات.";
+        break;
 
-      watchBtn.disabled = false;
-      watchBtn.textContent = '🎬 Watch Ad & Get Points';
+      case "daily_earn_limit":
+        message =
+          "🚫 وصلت إلى الحد اليومي للنقاط.";
+        break;
 
-      setStatus(
-        'The advertisement could not be completed. Please try again.',
-        'error'
-      );
+      case "inactive":
+        message =
+          "🚫 حسابك غير نشط.";
+        break;
+
+      case "duplicate":
+        message =
+          "⚠️ هذا الإعلان تم احتسابه مسبقاً.";
+        break;
+
+      case "invalid_user":
+        message =
+          "❌ Telegram User غير صالح.";
+        break;
+
+      case "missing_init_data":
+        message =
+          "❌ بيانات Telegram غير موجودة.";
+        break;
+
+      default:
+        if (data.message) {
+          message = "❌ " + data.message;
+        }
+    }
+
+    setStatus(message, "error");
+
+    watchBtn.disabled = false;
+    watchBtn.textContent = "🎬 مشاهدة الإعلان";
+
+  } catch (error) {
+
+    console.error("Reward error:", error);
+
+    setStatus(
+      "❌ حدث خطأ أثناء إضافة النقاط. حاول مرة أخرى.",
+      "error"
+    );
+
+    watchBtn.disabled = false;
+    watchBtn.textContent = "🎬 مشاهدة الإعلان";
+
+    if (tg) {
+      try {
+        tg.HapticFeedback.notificationOccurred("error");
+      } catch (e) {}
     }
   }
 
-  watchBtn.addEventListener('click', showAd);
-
-  closeBtn.addEventListener('click', function(){
-
-    if(!rewardReceived) return;
-
-    if(tg && typeof tg.close === 'function'){
-      tg.close();
-    }
-  });
-
-  setStatus('Ready. Watch the ad to receive your reward.');
-
-})();
+});
 </script>
 
 </body>
